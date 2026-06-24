@@ -1,1 +1,1 @@
-"""Inference utilities for srcV2."""
+"""Inference utilities."""

@@ -6,17 +6,17 @@ import sys
 from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[1]
+PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 import numpy as np
 import torch
 
-from srcV2.data.build_cache import LipLandmarkExtractor, decode_video_with_mouth_crops
-from srcV2.models import ContentUnitLipToSpeechModel
-from srcV2.utils.audio import _torch_mel_filterbank
-from srcV2.utils.common import get_device
+from data.build_cache import LipLandmarkExtractor, decode_video_with_mouth_crops
+from models import ContentUnitLipToSpeechModel
+from utils.audio import _torch_mel_filterbank
+from utils.common import get_device
 
 
 def build_content_unit_model(config: dict, device: torch.device) -> ContentUnitLipToSpeechModel:

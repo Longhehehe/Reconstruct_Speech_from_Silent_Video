@@ -11,8 +11,8 @@ import cv2
 import numpy as np
 from tqdm.auto import tqdm
 
-from srcV2.data.build_cache import LIP_LANDMARK_IDXS, box_from_landmarks, scan_raw_pairs
-from srcV2.utils.common import safe_name, seed_everything
+from data.build_cache import LIP_LANDMARK_IDXS, box_from_landmarks, scan_raw_pairs
+from utils.common import safe_name, seed_everything
 
 
 NOSE_TIP = 1

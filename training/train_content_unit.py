@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[1]
+PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -13,8 +13,8 @@ import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
-from srcV2.models import ContentUnitLipToSpeechModel
-from srcV2.training.common import (
+from models import ContentUnitLipToSpeechModel
+from training.common import (
     compute_mel_stats,
     load_checkpoint,
     make_loader,
@@ -24,7 +24,7 @@ from srcV2.training.common import (
     split_cache_files,
     write_history,
 )
-from srcV2.training.content_unit_common import (
+from training.content_unit_common import (
     infer_num_units,
     make_criterion,
     make_mismatch_inputs,
@@ -32,8 +32,8 @@ from srcV2.training.content_unit_common import (
     sanitize_batch,
     unit_weight_for_epoch,
 )
-from srcV2.utils.common import batch_to_device, get_device, seed_everything
-from srcV2.utils.plotting import save_mel_comparison
+from utils.common import batch_to_device, get_device, seed_everything
+from utils.plotting import save_mel_comparison
 
 
 def init_output_bias(model, mel_mean: torch.Tensor) -> None:
@@ -377,7 +377,7 @@ def run(args) -> None:
     if args.num_units <= 0:
         args.num_units = infer_num_units(train_files)
     if args.num_units <= 0:
-        raise RuntimeError("Content-unit training requires speech_units. Run srcV2.data.build_speech_units first.")
+        raise RuntimeError("Content-unit training requires speech_units. Run data.build_speech_units first.")
 
     train_loader = make_loader(
         args.data_dir,

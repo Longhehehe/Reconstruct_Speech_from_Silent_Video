@@ -10,7 +10,7 @@ from statistics import mean, median
 from tempfile import TemporaryDirectory
 
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[1]
+PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -19,12 +19,12 @@ import torch
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from srcV2.data import R2INRDataset, collate_r2inr
-from srcV2.inference.infer_video import build_content_unit_model
-from srcV2.training.content_unit_common import sanitize_batch
-from srcV2.training.common import split_cache_files
-from srcV2.utils.audio import _torch_mel_filterbank, load_waveform
-from srcV2.utils.common import batch_to_device, get_device
+from data import R2INRDataset, collate_r2inr
+from inference.infer_video import build_content_unit_model
+from training.content_unit_common import sanitize_batch
+from training.common import split_cache_files
+from utils.audio import _torch_mel_filterbank, load_waveform
+from utils.common import batch_to_device, get_device
 
 
 def normalize_waveform(wav: np.ndarray) -> np.ndarray:
@@ -150,7 +150,6 @@ def resolve_source_audio(path: str, data_dir: Path) -> Path:
         Path.cwd() / p,
         data_dir.parent / p,
         PROJECT_ROOT / p,
-        PROJECT_ROOT / "srcV2" / p,
     ]
     for candidate in candidates:
         if candidate.is_file():

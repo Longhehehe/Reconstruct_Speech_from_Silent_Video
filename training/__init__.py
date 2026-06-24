@@ -1,1 +1,1 @@
-"""Training entrypoints for srcV2."""
+"""Training entrypoints."""

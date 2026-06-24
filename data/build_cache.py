@@ -12,8 +12,8 @@ import torch
 import torch.nn.functional as F
 from tqdm.auto import tqdm
 
-from srcV2.utils.audio import log_mel_from_audio
-from srcV2.utils.common import safe_name, seed_everything
+from utils.audio import log_mel_from_audio
+from utils.common import safe_name, seed_everything
 
 
 DEFAULT_FACE_LANDMARKER_URL = (
@@ -390,7 +390,7 @@ def run(args) -> None:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Build srcV2 R2INR cache from Dataset_Output raw folders.")
+    parser = argparse.ArgumentParser(description="Build R2INR cache from Dataset_Output raw folders.")
     parser.add_argument("--raw-dir", default="Dataset_Output")
     parser.add_argument("--output-dir", default="Processed_Data_R2INR")
     parser.add_argument("--frame-size", type=int, default=96)

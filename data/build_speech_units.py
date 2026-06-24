@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 CURRENT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = CURRENT_DIR.parents[1]
+PROJECT_ROOT = CURRENT_DIR.parent
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
@@ -18,8 +18,8 @@ import torch.nn.functional as F
 from sklearn.cluster import MiniBatchKMeans
 from tqdm.auto import tqdm
 
-from srcV2.utils.audio import load_waveform
-from srcV2.utils.common import seed_everything
+from utils.audio import load_waveform
+from utils.common import seed_everything
 
 
 class SSLFeatureExtractor:

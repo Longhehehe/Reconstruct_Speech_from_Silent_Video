@@ -9,9 +9,9 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from srcV2.data import R2INRDataset, collate_r2inr
-from srcV2.models import MaskedMelLoss, R2INRModel
-from srcV2.utils.common import batch_to_device
+from data import R2INRDataset, collate_r2inr
+from models import MaskedMelLoss, R2INRModel
+from utils.common import batch_to_device
 
 
 def split_cache_files(data_dir: str | Path, val_ratio: float = 0.1, seed: int = 42, limit: int | None = None):

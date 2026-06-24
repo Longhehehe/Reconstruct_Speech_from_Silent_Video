@@ -9,8 +9,8 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
 
-from srcV2.data import R2INRDataset, collate_r2inr
-from srcV2.models import (
+from data import R2INRDataset, collate_r2inr
+from models import (
     ContextAlignLipToSpeechModel,
     ContextDetailLipToSpeechModel,
     ContextMotionDetailLipToSpeechModel,
@@ -20,8 +20,8 @@ from srcV2.models import (
     MotionTCNLipToSpeechModel,
     SimpleLipToSpeechModel,
 )
-from srcV2.training.common import build_model, load_checkpoint, masked_stats, model_inputs
-from srcV2.utils.common import batch_to_device, get_device, seed_everything
+from training.common import build_model, load_checkpoint, masked_stats, model_inputs
+from utils.common import batch_to_device, get_device, seed_everything
 
 
 def apply_variant(batch: dict, variant: str) -> dict:
@@ -234,7 +234,7 @@ def run(args) -> None:
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description="Input ablation for srcV2 R2INR checkpoints.")
+    parser = argparse.ArgumentParser(description="Input ablation for R2INR checkpoints.")
     parser.add_argument("--data-dir", default="Processed_Data_R2INR")
     parser.add_argument("--checkpoint", default="checkpoints_r2inr_v2/best_model.pth")
     parser.add_argument("--device", default="auto", choices=["auto", "cpu", "cuda"])

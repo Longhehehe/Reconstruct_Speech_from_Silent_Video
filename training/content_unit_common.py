@@ -5,8 +5,8 @@ from pathlib import Path
 import torch
 import torch.nn.functional as F
 
-from srcV2.models import MaskedMelLoss
-from srcV2.training.common import model_inputs
+from models import MaskedMelLoss
+from training.common import model_inputs
 
 
 def sanitize_batch(batch: dict) -> dict:

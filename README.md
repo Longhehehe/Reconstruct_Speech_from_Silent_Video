@@ -1,6 +1,6 @@
-# Reconstruct Speech From Silent Video - srcV2
+# Reconstruct Speech From Silent Video
 
-`srcV2` là pipeline khôi phục tiếng nói từ video câm. Phiên bản hiện tại chỉ giữ hướng tốt nhất: `ContentUnit`, tức mô hình dự đoán nội dung lời nói dưới dạng speech units trước, sau đó giải mã sang mel-spectrogram.
+Dự án này là pipeline khôi phục tiếng nói từ video câm. Phiên bản hiện tại chỉ giữ hướng tốt nhất: `ContentUnit`, tức mô hình dự đoán nội dung lời nói dưới dạng speech units trước, sau đó giải mã sang mel-spectrogram.
 
 Checkpoint tốt nhất đang được giữ tại:
 
@@ -17,33 +17,32 @@ https://drive.google.com/file/d/1fpGYgxU-9AxJMVhB9XGr_rc0IgfAUcNQ/view?usp=shari
 ## Cấu Trúc Dự Án
 
 ```text
-srcV2/
-  data/
-    build_cache.py          # tạo cache .pt từ video/audio thô
-    build_speech_units.py   # gắn HuBERT/k-means speech units vào cache
-    dataset.py              # Dataset + collate cho train/eval
-  models/
-    content_unit_model.py   # kiến trúc ContentUnit chính
-    loss.py                 # MaskedMelLoss
-    *_model.py              # các block phụ được ContentUnit tái sử dụng
-  training/
-    train_content_unit.py   # script train chính
-    content_unit_common.py  # helper riêng cho ContentUnit
-    diagnose_ablation.py    # kiểm tra model có thật sự dùng video/landmark không
-  inference/
-    infer_video.py          # predict audio từ một video câm
-    evaluate_audio_metrics.py # evaluate SNR/PESQ/ESTOI/HiFi-GAN...
-  utils/
-    audio.py
-    common.py
-    plotting.py
+data/
+  build_cache.py            # tạo cache .pt từ video/audio thô
+  build_speech_units.py     # gắn HuBERT/k-means speech units vào cache
+  dataset.py                # Dataset + collate cho train/eval
+models/
+  content_unit_model.py     # kiến trúc ContentUnit chính
+  loss.py                   # MaskedMelLoss
+  *_model.py                # các block phụ được ContentUnit tái sử dụng
+training/
+  train_content_unit.py     # script train chính
+  content_unit_common.py    # helper riêng cho ContentUnit
+  diagnose_ablation.py      # kiểm tra model có thật sự dùng video/landmark không
+inference/
+  infer_video.py            # predict audio từ một video câm
+  evaluate_audio_metrics.py # evaluate SNR/PESQ/ESTOI/HiFi-GAN...
+utils/
+  audio.py
+  common.py
+  plotting.py
 ```
 
-Các script train cũ có độ chính xác thấp hơn đã được loại khỏi `srcV2/training`. Một số file model cũ vẫn còn trong `models/` vì `ContentUnit` dùng lại các block như visual tower, landmark tower và conformer block.
+Các script train cũ có độ chính xác thấp hơn đã được loại khỏi `training`. Một số file model cũ vẫn còn trong `models/` vì `ContentUnit` dùng lại các block như visual tower, landmark tower và conformer block.
 
 ## Cài Đặt Môi Trường
 
-Khuyến nghị dùng Linux, Python 3.10-3.12, GPU NVIDIA nếu train. Chạy từ thư mục `srcV2`:
+Khuyến nghị dùng Linux, Python 3.10-3.12, GPU NVIDIA nếu train. Chạy từ root repo:
 
 ```bash
 chmod +x setup_running.sh
@@ -84,7 +83,7 @@ DOWNLOAD_BEST_MODEL=1 ./setup_running.sh
 Sau khi cài:
 
 ```bash
-export PYTHONPATH="$(dirname "$PWD")"
+export PYTHONPATH="$PWD"
 ```
 
 ## Tải Checkpoint Pretrained
@@ -98,20 +97,20 @@ https://drive.google.com/file/d/1fpGYgxU-9AxJMVhB9XGr_rc0IgfAUcNQ/view?usp=shari
 Đặt file về đúng đường dẫn:
 
 ```text
-srcV2/checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth
+checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth
 ```
 
 Cách tải tự động bằng setup:
 
 ```bash
-cd srcV2
+cd Reconstruct_Speech_from_Silent_Video
 DOWNLOAD_BEST_MODEL=1 ./setup_running.sh
 ```
 
 Cách tải thủ công:
 
 ```bash
-cd srcV2
+cd Reconstruct_Speech_from_Silent_Video
 python -m pip install gdown
 mkdir -p checkpoints_content_unit_lrs2_10k_units32_l6_smooth5
 python -m gdown "https://drive.google.com/uc?id=1fpGYgxU-9AxJMVhB9XGr_rc0IgfAUcNQ" \
@@ -125,6 +124,27 @@ ls -lh checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth
 ```
 
 ## Pipeline Xử Lý Dữ Liệu
+
+```mermaid
+flowchart TD
+    A[Video/audio thô<br/>Raw_Data hoặc mvlrs_v1] --> B[data/build_cache.py]
+    B --> C[MediaPipe Face Landmarker]
+    B --> D[Audio -> log-mel]
+    C --> E[Mouth crop 96x96<br/>landmarks môi + mask]
+    D --> F[Mel-spectrogram<br/>80 bins]
+    E --> G[Cache .pt]
+    F --> G
+    G --> H[data/build_speech_units.py]
+    H --> I[HuBERT SSL features]
+    I --> J[K-means units<br/>32 classes + smoothing]
+    J --> K[Cache train-ready<br/>video + landmarks + mel + speech_units]
+    K --> L[training/train_content_unit.py]
+    L --> M[best_model.pth]
+    M --> N[inference/evaluate_audio_metrics.py]
+    M --> O[inference/infer_video.py]
+```
+
+Pipeline có hai tầng cache: tầng đầu lưu video/mel/landmarks, tầng thứ hai thêm `speech_units` để mô hình học nội dung phát âm rõ hơn.
 
 ### 1. Dữ liệu thô
 
@@ -145,7 +165,7 @@ Nếu dữ liệu gốc là LRS2/mvlrs_v1 dạng `main/<video_id>/<clip>.mp4`, c
 ### 2. Build cache video/mel
 
 ```bash
-PYTHONPATH=.. python -m srcV2.data.build_cache \
+PYTHONPATH=. python -m data.build_cache \
   --raw-dir Raw_Data \
   --output-dir Processed_Data_R2INR_LRS2_10k \
   --overwrite \
@@ -169,8 +189,8 @@ Speech units là nhãn rời rạc được tạo từ đặc trưng HuBERT + k-
 Cấu hình tốt nhất hiện tại dùng `32` units và smoothing window `5`:
 
 ```bash
-PYTORCH_ALLOC_CONF=expandable_segments:True PYTHONPATH=.. \
-python -m srcV2.data.build_speech_units \
+PYTORCH_ALLOC_CONF=expandable_segments:True PYTHONPATH=. \
+python -m data.build_speech_units \
   --data-dir Processed_Data_R2INR_LRS2_10k \
   --output-dir Processed_Data_R2INR_LRS2_10k_units32_l6_smooth5_trainfit \
   --num-units 32 \
@@ -191,6 +211,35 @@ speech_unit_source
 ## Kiến Trúc Mô Hình ContentUnit
 
 Mục tiêu của kiến trúc là ưu tiên nội dung lời nói, không cố khôi phục đúng chất giọng từng người.
+
+```mermaid
+flowchart LR
+    V[Mouth crop video<br/>1 x T_video x 96 x 96] --> VT[MotionVisualTower<br/>trích xuất chuyển động môi]
+    L[Landmarks môi<br/>tọa độ + vận tốc + gia tốc] --> GT[LipGeometryTower<br/>hình dạng miệng]
+    VT --> F[Fusion<br/>visual + geometry]
+    GT --> F
+    F --> A[Temporal alignment<br/>video frames -> mel frames]
+    A --> E[ConformerLite Encoder<br/>ngữ cảnh theo thời gian]
+    E --> UH[Unit Head<br/>dự đoán speech_units]
+    UH --> UE[Unit posterior / teacher units<br/>unit embedding]
+    E --> D[Mel Decoder]
+    UE --> D
+    D --> Y[Predicted log-mel<br/>T_mel x 80]
+    Y --> GL[Griffin-Lim hoặc HiFi-GAN<br/>waveform để nghe/evaluate]
+```
+
+```mermaid
+flowchart TD
+    P[Predicted output] --> L1[Mel reconstruction loss]
+    P --> L2[Delta + delta2 loss]
+    P --> L3[Energy loss]
+    P --> L4[Speech-unit CE loss<br/>label smoothing]
+    L1 --> S[Total training loss]
+    L2 --> S
+    L3 --> S
+    L4 --> S
+    S --> C[Early stopping theo validation score]
+```
 
 Luồng chính:
 
@@ -218,8 +267,8 @@ Checkpoint tốt nhất hiện tại được train với `geometry_mode=basic`,
 Lệnh tái lập hướng tốt nhất hiện tại:
 
 ```bash
-PYTORCH_ALLOC_CONF=expandable_segments:True PYTHONPATH=.. \
-python -m srcV2.training.train_content_unit \
+PYTORCH_ALLOC_CONF=expandable_segments:True PYTHONPATH=. \
+python -m training.train_content_unit \
   --data-dir Processed_Data_R2INR_LRS2_10k_units32_l6_smooth5_trainfit \
   --output-dir checkpoints_content_unit_lrs2_10k_units32_l6_smooth5 \
   --device cuda \
@@ -268,7 +317,7 @@ mel_epoch_*.png
 ## Chạy Thử Inference Một Video Câm
 
 ```bash
-PYTHONPATH=.. python -m srcV2.inference.infer_video \
+PYTHONPATH=. python -m inference.infer_video \
   --video /path/to/test_video.mp4 \
   --checkpoint checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth \
   --output-dir inference_outputs/test_video \
@@ -293,7 +342,7 @@ File wav mặc định dùng Griffin-Lim để nghe nhanh. Nếu cần âm tự 
 Kiểm tra model có thật sự dùng video/landmark không:
 
 ```bash
-PYTHONPATH=.. python -m srcV2.training.diagnose_ablation \
+PYTHONPATH=. python -m training.diagnose_ablation \
   --data-dir Processed_Data_R2INR_LRS2_10k_units32_l6_smooth5_trainfit \
   --checkpoint checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth \
   --device cuda \
@@ -315,7 +364,7 @@ Kỳ vọng:
 Evaluate trên validation split:
 
 ```bash
-PYTHONPATH=.. python -m srcV2.inference.evaluate_audio_metrics \
+PYTHONPATH=. python -m inference.evaluate_audio_metrics \
   --data-dir Processed_Data_R2INR_LRS2_10k_units32_l6_smooth5_trainfit \
   --checkpoint checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth \
   --output-dir eval_audio_metrics_val_content_unit \
@@ -333,7 +382,7 @@ Dùng HiFi-GAN:
 ```bash
 python -m pip install speechbrain
 
-PYTHONPATH=.. python -m srcV2.inference.evaluate_audio_metrics \
+PYTHONPATH=. python -m inference.evaluate_audio_metrics \
   --data-dir Processed_Data_R2INR_LRS2_10k_units32_l6_smooth5_trainfit \
   --checkpoint checkpoints_content_unit_lrs2_10k_units32_l6_smooth5/best_model.pth \
   --output-dir eval_audio_metrics_val_content_unit_hifigan \
@@ -355,15 +404,9 @@ summary.json
 
 ## Lỗi Thường Gặp
 
-### Không import được `srcV2`
+### Không import được module dự án
 
-Chạy từ thư mục `srcV2`:
-
-```bash
-export PYTHONPATH=..
-```
-
-Hoặc từ root repo:
+Chạy từ root repo:
 
 ```bash
 export PYTHONPATH=.

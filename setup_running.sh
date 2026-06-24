@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO_ROOT="$(dirname "$PROJECT_DIR")"
+REPO_ROOT="$PROJECT_DIR"
 cd "$PROJECT_DIR"
 
 PYTHON_BIN="${PYTHON_BIN:-python3}"
@@ -83,9 +83,9 @@ import sklearn
 import torch
 import transformers
 
-from srcV2.data.build_cache import LipLandmarkExtractor
-from srcV2.inference.infer_video import build_content_unit_model
-from srcV2.training import train_content_unit
+from data.build_cache import LipLandmarkExtractor
+from inference.infer_video import build_content_unit_model
+from training import train_content_unit
 
 print("torch", torch.__version__, "cuda_available", torch.cuda.is_available())
 print("numpy", np.__version__)
@@ -97,6 +97,6 @@ PY
 echo
 echo "[setup] done"
 echo "[setup] activate later with: source $PROJECT_DIR/$VENV_DIR/bin/activate"
-echo "[setup] run commands from srcV2 with: export PYTHONPATH=$REPO_ROOT"
+echo "[setup] run commands from the repository root with: export PYTHONPATH=$PROJECT_DIR"
 echo "[setup] optional metrics: INSTALL_OPTIONAL_METRICS=1 ./setup_running.sh"
 echo "[setup] download checkpoint: DOWNLOAD_BEST_MODEL=1 ./setup_running.sh"
