@@ -1,0 +1,27 @@
+# Core scientific stack. Keep numpy/protobuf/mediapipe aligned to avoid
+# MediaPipe + TensorFlow protobuf runtime errors on Python 3.10-3.12.
+numpy==2.0.2
+protobuf==5.29.6
+pillow<12
+
+# Video, audio, and plotting.
+opencv-contrib-python>=4.10,<5
+scipy>=1.13
+librosa>=0.10.2
+soundfile>=0.12
+matplotlib>=3.8
+tqdm>=4.66
+
+# Landmark extraction.
+mediapipe==0.10.35
+
+# Speech-unit extraction.
+transformers>=4.40
+huggingface-hub>=0.23
+accelerate>=0.30
+safetensors>=0.4
+scikit-learn>=1.5
+
+# Objective audio metrics. PESQ, VISQOL, UTMOS and HiFi-GAN are optional;
+# setup_running.sh can install PESQ/SpeechBrain when requested.
+pystoi>=0.4.1
